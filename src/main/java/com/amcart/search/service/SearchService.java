@@ -1,12 +1,13 @@
 package com.amcart.search.service;
 
-import com.amcart.search.model.ProductRequest;
-import com.amcart.search.model.ProductResponse;
+import com.amcart.search.model.entity.Products;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public interface SearchService {
-    List<ProductResponse> loadAllProducts();
+    Iterable<Products> loadAllProducts();
+
+    Products createProducts(Products products);
 }

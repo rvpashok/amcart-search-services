@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Sku {
+    String id;
     String name;
     String color;
     String mediaUrl;
