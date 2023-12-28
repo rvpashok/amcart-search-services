@@ -10,4 +10,6 @@ public interface SearchService {
     Iterable<Products> loadAllProducts();
 
     Products createProducts(Products products);
+
+    public List<Products>  searchProducts(String searchTerm);
 }
