@@ -29,14 +29,14 @@ public class ElasticSearchConfig {
 
         RestHighLevelClient restHighLevelClient = new RestHighLevelClient(
                 RestClient.builder(new HttpHost(elasticsearchHost,
-                        Integer.parseInt("9200"),"http")).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                        Integer.parseInt("9200"), "http")).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
                     @Override
                     public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
                         return httpClientBuilder
                                 .setDefaultCredentialsProvider(credentialsProvider).setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE);
                     }
                 }));
-        return  restHighLevelClient;
+        return restHighLevelClient;
     }
 
 }

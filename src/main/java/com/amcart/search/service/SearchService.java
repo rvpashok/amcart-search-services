@@ -10,10 +10,9 @@ import java.util.List;
 
 @Service
 public interface SearchService {
-    Iterable<Products> loadAllProducts();
 
     Products createProducts(Products products);
 
-    public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
+    Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
                                          List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException;
 }

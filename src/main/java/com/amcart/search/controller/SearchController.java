@@ -24,13 +24,6 @@ public class SearchController {
     @Autowired
     private SearchService productService;
 
-    @GetMapping
-    @Operation(summary = "Load all search", method = "GET")
-    public Iterable<Products> getAllSearchData() {
-        Iterable<Products> toRet = new ArrayList<>();
-        toRet = productService.loadAllProducts();
-        return toRet;
-    }
 
     @GetMapping("/products")
     @Operation(summary = "Load all search", method = "GET")
@@ -40,13 +33,13 @@ public class SearchController {
                                                         @RequestParam(required = false, defaultValue = "10") int pageSize,
                                                         @RequestParam(required = false) String amcartFilter,
                                                         @RequestParam(required = false) String amcartSort) throws JsonProcessingException {
-        Page<Products>  toRet = null;
+        Page<Products> toRet = null;
         AmcartSort amcartSorting = new AmcartSort("price", Sort.Direction.ASC);
         List<String> amcartFiltering = new ArrayList<>();
-        if(Objects.nonNull(amcartSort) && !amcartSort.isBlank()){
+        if (Objects.nonNull(amcartSort) && !amcartSort.isBlank()) {
             amcartSorting = new ObjectMapper().readValue(amcartSort, AmcartSort.class);
         }
-        if(Objects.nonNull(amcartFilter) && !amcartFilter.isBlank()){
+        if (Objects.nonNull(amcartFilter) && !amcartFilter.isBlank()) {
             amcartFiltering = new ObjectMapper().readValue(amcartFilter, List.class);
         }
         toRet = productService.searchProducts(searchTerm, categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);

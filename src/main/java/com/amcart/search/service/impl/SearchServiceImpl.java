@@ -33,25 +33,13 @@ public class SearchServiceImpl implements SearchService {
     @Autowired
     ElasticsearchTemplate elasticsearchTemplate;
 
-    @Override
-    public Iterable<Products> loadAllProducts() {
-        Iterable<Products> toRet = searchRepository.findAll();
-        return toRet;
-    }
 
     @Override
     public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
                                          List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
         Page<Products> toRet = null;
         Criteria criteria = null;
-        if(Objects.nonNull(searchTerm) && !searchTerm.isBlank()){
-//            criteria = new Criteria("brand").fuzzy(searchTerm)
-//                    .or("name").fuzzy(searchTerm)
-//                    .or("skuName").fuzzy(searchTerm)
-//                    .or("skuColor").fuzzy(searchTerm)
-//                    .or("shortDescription").fuzzy(searchTerm)
-//                    .or("longDescription").fuzzy(searchTerm)
-//                    .or("tags").fuzzy(searchTerm);
+        if (Objects.nonNull(searchTerm) && !searchTerm.isBlank()) {
             criteria = new Criteria("brand").fuzzy(searchTerm)
                     .or("name").fuzzy(searchTerm)
                     .or("skuName").fuzzy(searchTerm)
@@ -60,49 +48,46 @@ public class SearchServiceImpl implements SearchService {
                     .or("longDescription").fuzzy(searchTerm)
                     .or("tags").fuzzy(searchTerm);
         }
-        if(Objects.nonNull(categoryId) && !categoryId.isBlank()){
+        if (Objects.nonNull(categoryId) && !categoryId.isBlank()) {
             Criteria andConditions = new Criteria("categoryIds").matches(categoryId);
-            if(Objects.nonNull(criteria) && Objects.nonNull(criteria.getField())){
+            if (Objects.nonNull(criteria) && Objects.nonNull(criteria.getField())) {
                 criteria = andConditions.and(criteria);
-            }
-            else{
+            } else {
                 criteria = andConditions;
             }
         }
-        if(Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()){
-            for(Object filter: amcartFilter){
+        if (Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()) {
+            for (Object filter : amcartFilter) {
                 AmcartFilter amcartFiltering = new ObjectMapper().convertValue(filter, AmcartFilter.class);
                 Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
-                if(Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")){
+                if (Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")) {
                     andConditions.between(amcartFiltering.getFieldValue()[0], amcartFiltering.getFieldValue()[1]);
-                }
-                else {
+                } else {
                     andConditions.matches(amcartFiltering.getFieldValue()[0]);
                 }
-                if(Objects.nonNull(criteria)){
+                if (Objects.nonNull(criteria)) {
                     criteria = andConditions.and(criteria);
-                }
-                else{
+                } else {
                     criteria = andConditions;
                 }
             }
         }
         Sort sorting = Sort.by(amcartSort.getDirection(), amcartSort.getFieldName());
         Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
-        CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(criteria)
+        CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(Objects.nonNull(criteria) ? criteria : new Criteria())
                 .withPageable(pageable);
         Query query = new CriteriaQuery(criteriaQueryBuilder);
         SearchHits<Products> results = elasticsearchOperations.search(query, Products.class);
         List<Products> searchResultContents = new ArrayList<>();
-        if(results != null && !results.isEmpty()){
-            results.getSearchHits().stream().forEach(f->{
+        if (results != null && !results.isEmpty()) {
+            results.getSearchHits().stream().forEach(f -> {
                 Products products = f.getContent();
                 searchResultContents.add(products);
             });
             toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
         }
 
-        results = elasticsearchTemplate.search(query, Products.class);
+        //results = elasticsearchTemplate.search(query, Products.class);
         return toRet;
     }
 

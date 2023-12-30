@@ -3,7 +3,6 @@ package com.amcart.search.model.entity;
 import com.amcart.search.model.CurrencyType;
 import com.amcart.search.model.PriceType;
 import com.amcart.search.model.ProductStatus;
-import com.amcart.search.model.Sku;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
