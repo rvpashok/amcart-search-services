@@ -1,12 +1,12 @@
 package com.amcart.search.service.impl;
 
-import co.elastic.clients.elasticsearch.query_ruleset.QueryRuleCriteria;
+import com.amcart.search.model.AmcartFilter;
+import com.amcart.search.model.AmcartSort;
 import com.amcart.search.model.entity.Products;
 import com.amcart.search.repository.SearchRepository;
 import com.amcart.search.service.SearchService;
-import org.elasticsearch.client.ElasticsearchClient;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
@@ -16,7 +16,6 @@ import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
 import org.springframework.data.elasticsearch.core.query.CriteriaQueryBuilder;
 import org.springframework.data.elasticsearch.core.query.Query;
-import org.springframework.data.querydsl.QPageRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -41,22 +40,57 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize) {
+    public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
+                                         List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
         Page<Products> toRet = null;
-        Criteria criteria = new Criteria("brand").fuzzy(searchTerm)
-                .or("name").fuzzy(searchTerm)
-                .or("skuName").fuzzy(searchTerm)
-                .or("skuColor").fuzzy(searchTerm)
-                .or("shortDescription").fuzzy(searchTerm)
-                .or("longDescription").fuzzy(searchTerm)
-                .or("tags").fuzzy(searchTerm);
+        Criteria criteria = null;
+        if(Objects.nonNull(searchTerm) && !searchTerm.isBlank()){
+//            criteria = new Criteria("brand").fuzzy(searchTerm)
+//                    .or("name").fuzzy(searchTerm)
+//                    .or("skuName").fuzzy(searchTerm)
+//                    .or("skuColor").fuzzy(searchTerm)
+//                    .or("shortDescription").fuzzy(searchTerm)
+//                    .or("longDescription").fuzzy(searchTerm)
+//                    .or("tags").fuzzy(searchTerm);
+            criteria = new Criteria("brand").fuzzy(searchTerm)
+                    .or("name").fuzzy(searchTerm)
+                    .or("skuName").fuzzy(searchTerm)
+                    .or("skuColor").fuzzy(searchTerm)
+                    .or("shortDescription").fuzzy(searchTerm)
+                    .or("longDescription").fuzzy(searchTerm)
+                    .or("tags").fuzzy(searchTerm);
+        }
         if(Objects.nonNull(categoryId) && !categoryId.isBlank()){
             Criteria andConditions = new Criteria("categoryIds").matches(categoryId);
-            criteria = andConditions.and(criteria);
+            if(Objects.nonNull(criteria) && Objects.nonNull(criteria.getField())){
+                criteria = andConditions.and(criteria);
+            }
+            else{
+                criteria = andConditions;
+            }
         }
-        Sort sorting = Sort.by(Sort.Direction.DESC, "_score");
+        if(Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()){
+            for(Object filter: amcartFilter){
+                AmcartFilter amcartFiltering = new ObjectMapper().convertValue(filter, AmcartFilter.class);
+                Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
+                if(Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")){
+                    andConditions.between(amcartFiltering.getFieldValue()[0], amcartFiltering.getFieldValue()[1]);
+                }
+                else {
+                    andConditions.matches(amcartFiltering.getFieldValue()[0]);
+                }
+                if(Objects.nonNull(criteria)){
+                    criteria = andConditions.and(criteria);
+                }
+                else{
+                    criteria = andConditions;
+                }
+            }
+        }
+        Sort sorting = Sort.by(amcartSort.getDirection(), amcartSort.getFieldName());
         Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
-        CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(criteria).withPageable(pageable);
+        CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(criteria)
+                .withPageable(pageable);
         Query query = new CriteriaQuery(criteriaQueryBuilder);
         SearchHits<Products> results = elasticsearchOperations.search(query, Products.class);
         List<Products> searchResultContents = new ArrayList<>();
