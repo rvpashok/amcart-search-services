@@ -3,6 +3,8 @@ package com.amcart.search.service.impl;
 import com.amcart.search.model.AmcartFilter;
 import com.amcart.search.model.AmcartSort;
 import com.amcart.search.model.entity.Products;
+import com.amcart.search.model.request.ProductsSearchRequest;
+import com.amcart.search.model.response.ProductsSearchResponse;
 import com.amcart.search.repository.SearchRepository;
 import com.amcart.search.service.SearchService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class SearchServiceImpl implements SearchService {
@@ -35,9 +38,9 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
-    public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
-                                         List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
-        Page<Products> toRet = null;
+    public Page<ProductsSearchResponse> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
+                                                       List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
+        Page<ProductsSearchResponse> toRet = null;
         Criteria criteria = null;
         if (Objects.nonNull(searchTerm) && !searchTerm.isBlank()) {
             criteria = new Criteria("brand").fuzzy(searchTerm)
@@ -78,11 +81,11 @@ public class SearchServiceImpl implements SearchService {
                 .withPageable(pageable);
         Query query = new CriteriaQuery(criteriaQueryBuilder);
         SearchHits<Products> results = elasticsearchOperations.search(query, Products.class);
-        List<Products> searchResultContents = new ArrayList<>();
+        List<ProductsSearchResponse> searchResultContents = new ArrayList<>();
         if (results != null && !results.isEmpty()) {
             results.getSearchHits().stream().forEach(f -> {
                 Products products = f.getContent();
-                searchResultContents.add(products);
+                searchResultContents.add(products.convertToReponseModel());
             });
             toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
         }
@@ -92,8 +95,35 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public Products createProducts(Products products) {
-        Products toRet = searchRepository.save(products);
+    public ProductsSearchResponse createProductSearchData(ProductsSearchRequest productsSearchRequest) {
+        Products createdSearchDataResp = searchRepository.save(productsSearchRequest.convertToEntityModel());
+        return createdSearchDataResp.convertToReponseModel();
+    }
+
+    @Override
+    public ProductsSearchResponse updateProductSearchData(String id, ProductsSearchRequest productsSearchRequest) {
+        ProductsSearchResponse toRet = new ProductsSearchResponse();
+        Optional<Products> existingProductSearchData = searchRepository.findById(id);
+        Products updatedProductSearchEntity = null;
+        if(Objects.nonNull(existingProductSearchData) && existingProductSearchData.isPresent()){
+            Products existingSearchProductEntity = existingProductSearchData.get();
+            updatedProductSearchEntity = productsSearchRequest.convertToEntityModel();
+            updatedProductSearchEntity.setId(existingSearchProductEntity.getId());
+            updatedProductSearchEntity = searchRepository.save(updatedProductSearchEntity);
+        }
+        else{
+           // throw new Exception("ProductSearchData not found with id: " + id);
+        }
+        toRet = updatedProductSearchEntity.convertToReponseModel();
         return toRet;
+    }
+
+    @Override
+    public String deleteProductSearchData(String id) {
+        Optional<Products> productsOptional = searchRepository.findById(id);
+        if(productsOptional.isPresent()){
+            searchRepository.deleteById(id);
+        }
+        return "Product Search data deleted successfully";
     }
 }

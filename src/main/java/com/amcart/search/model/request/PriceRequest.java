@@ -1,5 +1,7 @@
-package com.amcart.search.model;
+package com.amcart.search.model.request;
 
+import com.amcart.search.model.CurrencyType;
+import com.amcart.search.model.PriceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

@@ -1,5 +1,6 @@
-package com.amcart.search.model;
+package com.amcart.search.model.request;
 
+import com.amcart.search.model.CategoryStatus;
 import lombok.*;
 
 import java.util.Map;

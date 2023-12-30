@@ -1,15 +1,14 @@
-package com.amcart.search.model.entity;
+package com.amcart.search.model.request;
 
 import com.amcart.search.model.CurrencyType;
 import com.amcart.search.model.PriceType;
 import com.amcart.search.model.ProductStatus;
+import com.amcart.search.model.entity.Products;
 import com.amcart.search.model.response.ProductsSearchResponse;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +16,8 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Document(indexName = "search-entity")
-public class Products {
-    @Id
+@JsonIgnoreProperties
+public class ProductsSearchRequest {
     String id;
     String productId;
     String name;
@@ -41,9 +39,8 @@ public class Products {
     boolean isDeleted;
     Map<String, Object> properties;
 
-    public ProductsSearchResponse convertToReponseModel(){
-        ProductsSearchResponse toRet = new ProductsSearchResponse();
-        toRet.setId(this.getId());
+    public Products convertToEntityModel(){
+        Products toRet = new Products();
         toRet.setProductId(this.getProductId());
         toRet.setName(this.getName());
         toRet.setShortDescription(this.getShortDescription());
