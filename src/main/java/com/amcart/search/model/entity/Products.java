@@ -28,12 +28,15 @@ public class Products {
     String brand;
     ProductStatus status;
     List<String> tags;
-    List<Sku> skus;
-    boolean isDeleted;
-    List<String> categoryIds;
-    Map<String, Object> properties;
     String skuId;
+    String skuName;
+    String skuColor;
+    String skuMediaUrl;
+    String skuSize;
+    List<String> categoryIds;
     PriceType priceType;
     CurrencyType currencyType;
     double price;
+    boolean isDeleted;
+    Map<String, Object> properties;
 }

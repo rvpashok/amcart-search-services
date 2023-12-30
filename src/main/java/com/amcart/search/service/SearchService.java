@@ -1,6 +1,7 @@
 package com.amcart.search.service;
 
 import com.amcart.search.model.entity.Products;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,5 +12,5 @@ public interface SearchService {
 
     Products createProducts(Products products);
 
-    public List<Products>  searchProducts(String searchTerm);
+    public Page<Products> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize);
 }
