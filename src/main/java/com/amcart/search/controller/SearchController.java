@@ -1,9 +1,9 @@
 package com.amcart.search.controller;
 
 import com.amcart.search.model.AmcartSort;
-import com.amcart.search.model.entity.Products;
 import com.amcart.search.model.request.ProductsSearchRequest;
 import com.amcart.search.model.response.ProductsSearchResponse;
+import com.amcart.search.model.response.ProductsSuggestionResponse;
 import com.amcart.search.service.SearchService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,8 +24,18 @@ import java.util.Objects;
 @RequestMapping("/search")
 public class SearchController {
     @Autowired
-    private SearchService productService;
+    private SearchService searchService;
 
+    @GetMapping("/products/suggestions")
+    @Operation(summary = "Products Suggestions", method = "GET")
+    public ResponseEntity<Page<ProductsSuggestionResponse>> getProductSearchSuggestion(@RequestParam(required = true) String searchTerm,
+                                                                                       @RequestParam(required = false) String categoryId,
+                                                                                       @RequestParam(required = false, defaultValue = "0") int pageNo,
+                                                                                       @RequestParam(required = false, defaultValue = "10") int pageSize) throws JsonProcessingException {
+        Page<ProductsSuggestionResponse> toRet = null;
+        toRet = searchService.suggestProducts(searchTerm, categoryId, pageNo, pageSize);
+        return new ResponseEntity<>(toRet, HttpStatus.OK);
+    }
     @GetMapping("/products")
     @Operation(summary = "Search Products", method = "GET")
     public ResponseEntity<Page<ProductsSearchResponse>> getProductSearchData(@RequestParam(required = false) String searchTerm,
@@ -43,7 +53,7 @@ public class SearchController {
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isBlank()) {
             amcartFiltering = new ObjectMapper().readValue(amcartFilter, List.class);
         }
-        toRet = productService.searchProducts(searchTerm, categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);
+        toRet = searchService.searchProducts(searchTerm, categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
 
@@ -51,7 +61,7 @@ public class SearchController {
     @Operation(summary = "Create search data", method = "POST")
     public ResponseEntity<ProductsSearchResponse> createSearchData(@RequestBody ProductsSearchRequest productsSearchRequest) {
         ProductsSearchResponse toRet = new ProductsSearchResponse();
-        toRet = productService.createProductSearchData(productsSearchRequest);
+        toRet = searchService.createProductSearchData(productsSearchRequest);
         return new ResponseEntity<>(toRet, HttpStatus.CREATED);
     }
 
@@ -60,7 +70,7 @@ public class SearchController {
     public ResponseEntity<ProductsSearchResponse> updateSearchData(@PathVariable(required = true) String id,
             @RequestBody ProductsSearchRequest productsSearchRequest) {
         ProductsSearchResponse toRet = new ProductsSearchResponse();
-        toRet = productService.updateProductSearchData(id, productsSearchRequest);
+        toRet = searchService.updateProductSearchData(id, productsSearchRequest);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
 
@@ -68,7 +78,7 @@ public class SearchController {
     @Operation(summary = "Delete search data", method = "POST")
     public ResponseEntity<String> deleteSearchData(@PathVariable(required = true) String id) {
         String toRet = new String();
-        toRet = productService.deleteProductSearchData(id);
+        toRet = searchService.deleteProductSearchData(id);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
 }

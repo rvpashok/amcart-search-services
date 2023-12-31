@@ -5,19 +5,21 @@ import com.amcart.search.model.AmcartSort;
 import com.amcart.search.model.entity.Products;
 import com.amcart.search.model.request.ProductsSearchRequest;
 import com.amcart.search.model.response.ProductsSearchResponse;
+import com.amcart.search.model.response.ProductsSuggestionResponse;
 import com.amcart.search.repository.SearchRepository;
 import com.amcart.search.service.SearchService;
+import com.amcart.search.util.CommonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.Criteria;
-import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
-import org.springframework.data.elasticsearch.core.query.CriteriaQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.Query;
+import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -86,6 +88,50 @@ public class SearchServiceImpl implements SearchService {
             results.getSearchHits().stream().forEach(f -> {
                 Products products = f.getContent();
                 searchResultContents.add(products.convertToReponseModel());
+            });
+            toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
+        }
+
+        //results = elasticsearchTemplate.search(query, Products.class);
+        return toRet;
+    }
+
+    @Override
+    public Page<ProductsSuggestionResponse> suggestProducts(String searchTerm, String categoryId, int pageNo, int pageSize) {
+        Page<ProductsSuggestionResponse> toRet = null;
+
+        Sort sorting = Sort.by(Sort.Direction.DESC, "_score");
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
+        searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
+        searchTerm = CommonUtil.escapeMetaCharacters(searchTerm)+"*";
+
+        //String query = "{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\",\"minimum_should_match\":0},\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}";
+        //String query = "{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\",\"minimum_should_match\":0}," +
+              //  "\"match\":{\"categoryIds\":{\"query\":\""+categoryId+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}"+
+                //"}";
+        //String query = "{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}";
+        //String query = "{\"regexp\":{\"name\":{\"value\":\""+searchTerm+"\",\"flags\": \"ALL\",\"minimum_should_match\":0}}}";
+        //String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"searchTerm\",\"minimum_should_match\":0}},{\"match\":{\"categoryIds\":{\"query\":\"Electronics\",\"fuzziness\":\"fuzziness\"}}}]}}";
+        //String query = "{\"bool\":{\"must\":{\"term\":{\"name\":\"kimchy\"}},\"filter\":{\"term\":{\"tags\":\"production\"}},\"should\":[{\"term\":{\"tags\":\"env1\"}},{\"term\":{\"tags\":\"deployed\"}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+        String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\"}}" +
+                ",{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]" +
+                ",\"minimum_should_match\":1,\"boost\":1.0}}";
+        if(Objects.nonNull(categoryId) && !categoryId.isBlank()){
+            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\""+categoryId+"\"}}," +
+                    "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\"}}," +
+                    "{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
+                    "\"minimum_should_match\":1,\"boost\":1.0}}";
+
+        }
+        Query searchQuery = new StringQuery(query).setPageable(pageable);
+
+
+        SearchHits<Products> results = elasticsearchOperations.search(searchQuery, Products.class);
+        List<ProductsSuggestionResponse> searchResultContents = new ArrayList<>();
+        if (results != null && !results.isEmpty()) {
+            results.getSearchHits().stream().forEach(f -> {
+                Products products = f.getContent();
+                searchResultContents.add(products.convertToSuggestionReponseModel());
             });
             toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
         }

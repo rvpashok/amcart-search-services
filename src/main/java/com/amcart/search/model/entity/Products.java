@@ -4,6 +4,7 @@ import com.amcart.search.model.CurrencyType;
 import com.amcart.search.model.PriceType;
 import com.amcart.search.model.ProductStatus;
 import com.amcart.search.model.response.ProductsSearchResponse;
+import com.amcart.search.model.response.ProductsSuggestionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -63,6 +64,12 @@ public class Products {
         toRet.setPrice(this.getPrice());
         toRet.setProperties(this.getProperties());
         toRet.setDeleted(this.isDeleted());
+        return toRet;
+    }
+
+    public ProductsSuggestionResponse convertToSuggestionReponseModel(){
+        ProductsSuggestionResponse toRet = new ProductsSuggestionResponse();
+        toRet.setName(this.getName());
         return toRet;
     }
 }
