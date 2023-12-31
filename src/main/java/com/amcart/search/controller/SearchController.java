@@ -36,14 +36,15 @@ public class SearchController {
         toRet = searchService.suggestProducts(searchTerm, categoryId, pageNo, pageSize);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
+
     @GetMapping("/products")
     @Operation(summary = "Search Products", method = "GET")
     public ResponseEntity<Page<ProductsSearchResponse>> getProductSearchData(@RequestParam(required = false) String searchTerm,
-                                                                      @RequestParam(required = false) String categoryId,
-                                                                      @RequestParam(required = false, defaultValue = "0") int pageNo,
-                                                                      @RequestParam(required = false, defaultValue = "10") int pageSize,
-                                                                      @RequestParam(required = false) String amcartFilter,
-                                                                      @RequestParam(required = false) String amcartSort) throws JsonProcessingException {
+                                                                             @RequestParam(required = false) String categoryId,
+                                                                             @RequestParam(required = false, defaultValue = "0") int pageNo,
+                                                                             @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                                                             @RequestParam(required = false) String amcartFilter,
+                                                                             @RequestParam(required = false) String amcartSort) throws JsonProcessingException {
         Page<ProductsSearchResponse> toRet = null;
         AmcartSort amcartSorting = new AmcartSort("price", Sort.Direction.ASC);
         List<String> amcartFiltering = new ArrayList<>();
@@ -68,7 +69,7 @@ public class SearchController {
     @PutMapping("/{id}")
     @Operation(summary = "Update search data", method = "POST")
     public ResponseEntity<ProductsSearchResponse> updateSearchData(@PathVariable(required = true) String id,
-            @RequestBody ProductsSearchRequest productsSearchRequest) {
+                                                                   @RequestBody ProductsSearchRequest productsSearchRequest) {
         ProductsSearchResponse toRet = new ProductsSearchResponse();
         toRet = searchService.updateProductSearchData(id, productsSearchRequest);
         return new ResponseEntity<>(toRet, HttpStatus.OK);

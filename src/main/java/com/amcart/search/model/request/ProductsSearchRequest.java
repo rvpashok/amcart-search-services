@@ -4,7 +4,6 @@ import com.amcart.search.model.CurrencyType;
 import com.amcart.search.model.PriceType;
 import com.amcart.search.model.ProductStatus;
 import com.amcart.search.model.entity.Products;
-import com.amcart.search.model.response.ProductsSearchResponse;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -39,7 +38,7 @@ public class ProductsSearchRequest {
     boolean isDeleted;
     Map<String, Object> properties;
 
-    public Products convertToEntityModel(){
+    public Products convertToEntityModel() {
         Products toRet = new Products();
         toRet.setProductId(this.getProductId());
         toRet.setName(this.getName());

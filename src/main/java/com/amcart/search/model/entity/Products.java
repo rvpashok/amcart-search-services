@@ -8,7 +8,6 @@ import com.amcart.search.model.response.ProductsSuggestionResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.Document;
 
@@ -42,7 +41,7 @@ public class Products {
     boolean isDeleted;
     Map<String, Object> properties;
 
-    public ProductsSearchResponse convertToReponseModel(){
+    public ProductsSearchResponse convertToReponseModel() {
         ProductsSearchResponse toRet = new ProductsSearchResponse();
         toRet.setId(this.getId());
         toRet.setProductId(this.getProductId());
@@ -67,7 +66,7 @@ public class Products {
         return toRet;
     }
 
-    public ProductsSuggestionResponse convertToSuggestionReponseModel(){
+    public ProductsSuggestionResponse convertToSuggestionReponseModel() {
         ProductsSuggestionResponse toRet = new ProductsSuggestionResponse();
         toRet.setName(this.getName());
         return toRet;

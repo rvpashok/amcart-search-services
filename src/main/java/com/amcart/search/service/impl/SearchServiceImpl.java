@@ -11,12 +11,8 @@ import com.amcart.search.service.SearchService;
 import com.amcart.search.util.CommonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.*;
@@ -35,8 +31,8 @@ public class SearchServiceImpl implements SearchService {
 
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
-    @Autowired
-    ElasticsearchTemplate elasticsearchTemplate;
+//    //@Autowired
+//    ElasticsearchTemplate elasticsearchTemplate;
 
 
     @Override
@@ -103,23 +99,23 @@ public class SearchServiceImpl implements SearchService {
         Sort sorting = Sort.by(Sort.Direction.DESC, "_score");
         Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
         searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
-        searchTerm = CommonUtil.escapeMetaCharacters(searchTerm)+"*";
+        searchTerm = CommonUtil.escapeMetaCharacters(searchTerm) + "*";
 
         //String query = "{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\",\"minimum_should_match\":0},\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}";
         //String query = "{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\",\"minimum_should_match\":0}," +
-              //  "\"match\":{\"categoryIds\":{\"query\":\""+categoryId+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}"+
-                //"}";
+        //  "\"match\":{\"categoryIds\":{\"query\":\""+categoryId+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}"+
+        //"}";
         //String query = "{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}";
         //String query = "{\"regexp\":{\"name\":{\"value\":\""+searchTerm+"\",\"flags\": \"ALL\",\"minimum_should_match\":0}}}";
         //String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"searchTerm\",\"minimum_should_match\":0}},{\"match\":{\"categoryIds\":{\"query\":\"Electronics\",\"fuzziness\":\"fuzziness\"}}}]}}";
         //String query = "{\"bool\":{\"must\":{\"term\":{\"name\":\"kimchy\"}},\"filter\":{\"term\":{\"tags\":\"production\"}},\"should\":[{\"term\":{\"tags\":\"env1\"}},{\"term\":{\"tags\":\"deployed\"}}],\"minimum_should_match\":1,\"boost\":1.0}}";
-        String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\"}}" +
-                ",{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]" +
+        String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}" +
+                ",{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]" +
                 ",\"minimum_should_match\":1,\"boost\":1.0}}";
-        if(Objects.nonNull(categoryId) && !categoryId.isBlank()){
-            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\""+categoryId+"\"}}," +
-                    "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\""+searchTerm+"\"}}," +
-                    "{\"match\":{\"name\":{\"query\":\""+searchTerm+"\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
+        if (Objects.nonNull(categoryId) && !categoryId.isBlank()) {
+            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
+                    "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}," +
+                    "{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
                     "\"minimum_should_match\":1,\"boost\":1.0}}";
 
         }
@@ -139,6 +135,7 @@ public class SearchServiceImpl implements SearchService {
         //results = elasticsearchTemplate.search(query, Products.class);
         return toRet;
     }
+
 
     @Override
     public ProductsSearchResponse createProductSearchData(ProductsSearchRequest productsSearchRequest) {

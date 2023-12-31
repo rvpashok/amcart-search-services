@@ -1,35 +1,49 @@
 package com.amcart.search.config;
 
-import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
-import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
-import org.elasticsearch.client.RestHighLevelClient;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.ElasticsearchTransportBase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.client.ClientConfiguration;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchClients;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.index.Settings;
+import org.springframework.stereotype.Component;
+
+import java.net.UnknownHostException;
+import java.time.Duration;
 
 @Configuration
+@Component
 public class ElasticSearchConfig {
 
     @Value("${elasticsearch.host}")
-    private String elasticsearchHost;
+    private String elasticsearchDBHost;
+    @Value("${elasticsearch.port}")
+    private String elasticsearchDBPort;
+    @Value("${elasticsearch.username}")
+    private String elasticsearchDBUsername;
+    @Value("${elasticsearch.password}")
+    private String elasticsearchDBPassword;
+    @Value("${elasticsearch.protocol}")
+    private String elasticsearchDBProtocol;
 
-    @Bean
+    public ElasticSearchConfig() {
+        System.out.println("\n\n\n\nTTTTTTTTTTTTTTTT\n\n\n\n");
+    }
+
+    /*@Bean
     public RestHighLevelClient client() {
         final CredentialsProvider credentialsProvider =
                 new BasicCredentialsProvider();
         credentialsProvider.setCredentials(AuthScope.ANY,
-                new UsernamePasswordCredentials("elastic", "eSnEGaN*vB017OcIphty"));
+                new UsernamePasswordCredentials(elasticsearchDBUsername, elasticsearchDBPassword));
 
         RestHighLevelClient restHighLevelClient = new RestHighLevelClient(
-                RestClient.builder(new HttpHost(elasticsearchHost,
-                        Integer.parseInt("9200"), "http")).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
+                RestClient.builder(new HttpHost(elasticsearchDBHost,
+                        Integer.parseInt(elasticsearchDBPort), elasticsearchDBProtocol)).setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
                     @Override
                     public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder httpClientBuilder) {
                         return httpClientBuilder
@@ -37,6 +51,31 @@ public class ElasticSearchConfig {
                     }
                 }));
         return restHighLevelClient;
+    }*/
+
+
+    /*public ElasticsearchClient elasticsearchClient(){
+
+        ClientConfiguration clientConfiguration = ClientConfiguration.builder()
+                .connectedTo("localhost:9200", "localhost:9291")
+                .usingSsl()
+                .withPathPrefix("ela")
+                .withConnectTimeout(Duration.ofSeconds(5))
+                .withSocketTimeout(Duration.ofSeconds(3))
+                .withBasicAuth(elasticsearchDBUsername, elasticsearchDBPassword)
+                .withClientConfigurer(ElasticsearchClients.ElasticsearchRestClientConfigurationCallback.from(restClientBuilder -> {
+                            // configure the Elasticsearch RestClient
+
+                            return restClientBuilder;
+                        }))
+                .build();
+
+        ElasticsearchClient elasticsearchClient = new ElasticsearchClient();
     }
+
+    @Bean(name = { "elasticsearchOperations", "elasticsearchTemplate" })
+    public ElasticsearchTemplate elasticsearchTemplate() throws UnknownHostException {
+        return new ElasticsearchTemplate(elasticsearchClient());
+    }*/
 
 }
