@@ -148,14 +148,13 @@ public class SearchServiceImpl implements SearchService {
         ProductsSearchResponse toRet = new ProductsSearchResponse();
         Optional<Products> existingProductSearchData = searchRepository.findById(id);
         Products updatedProductSearchEntity = null;
-        if(Objects.nonNull(existingProductSearchData) && existingProductSearchData.isPresent()){
+        if (Objects.nonNull(existingProductSearchData) && existingProductSearchData.isPresent()) {
             Products existingSearchProductEntity = existingProductSearchData.get();
             updatedProductSearchEntity = productsSearchRequest.convertToEntityModel();
             updatedProductSearchEntity.setId(existingSearchProductEntity.getId());
             updatedProductSearchEntity = searchRepository.save(updatedProductSearchEntity);
-        }
-        else{
-           // throw new Exception("ProductSearchData not found with id: " + id);
+        } else {
+            // throw new Exception("ProductSearchData not found with id: " + id);
         }
         toRet = updatedProductSearchEntity.convertToReponseModel();
         return toRet;
@@ -164,7 +163,7 @@ public class SearchServiceImpl implements SearchService {
     @Override
     public String deleteProductSearchData(String id) {
         Optional<Products> productsOptional = searchRepository.findById(id);
-        if(productsOptional.isPresent()){
+        if (productsOptional.isPresent()) {
             searchRepository.deleteById(id);
         }
         return "Product Search data deleted successfully";

@@ -1,19 +1,8 @@
 package com.amcart.search.config;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.transport.ElasticsearchTransport;
-import co.elastic.clients.transport.ElasticsearchTransportBase;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.elasticsearch.client.ClientConfiguration;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchClients;
-import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
-import org.springframework.data.elasticsearch.core.index.Settings;
 import org.springframework.stereotype.Component;
-
-import java.net.UnknownHostException;
-import java.time.Duration;
 
 @Configuration
 @Component
