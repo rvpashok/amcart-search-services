@@ -35,11 +35,25 @@ public class SearchServiceImpl implements SearchService {
 //    ElasticsearchTemplate elasticsearchTemplate;
 
 
+
     @Override
     public Page<ProductsSearchResponse> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                        List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
         Page<ProductsSearchResponse> toRet = null;
+
+        toRet = getSearchResults(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
+        //toRet = getSearchResultsUsingStringQuery(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
+
+        //results = elasticsearchTemplate.search(query, Products.class);
+        return toRet;
+    }
+
+    private Page<ProductsSearchResponse> getSearchResultsUsingStringQuery(String searchTerm, String categoryId, int pageNo, int pageSize,
+                                                          List<String> amcartFilter, AmcartSort amcartSort){
+        Page<ProductsSearchResponse> toRet = null;
         Criteria criteria = null;
+        searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
+        searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
         if (Objects.nonNull(searchTerm) && !searchTerm.isBlank()) {
             criteria = new Criteria("brand").fuzzy(searchTerm)
                     .or("name").fuzzy(searchTerm)
@@ -87,8 +101,74 @@ public class SearchServiceImpl implements SearchService {
             });
             toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
         }
+        return toRet;
+    }
 
-        //results = elasticsearchTemplate.search(query, Products.class);
+    private Page<ProductsSearchResponse> getSearchResults(String searchTerm, String categoryId, int pageNo, int pageSize,
+                                                          List<String> amcartFilter, AmcartSort amcartSort){
+        Page<ProductsSearchResponse> toRet = null;
+        Criteria criteria = null;
+        searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
+        searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
+        if (Objects.nonNull(searchTerm) && !searchTerm.isBlank()) {
+            criteria = new Criteria("brand").fuzzy(searchTerm)
+                    .or("name").fuzzy(searchTerm)
+                    .or("skuName").fuzzy(searchTerm)
+                    .or("skuColor").fuzzy(searchTerm)
+                    .or("shortDescription").fuzzy(searchTerm)
+                    .or("longDescription").fuzzy(searchTerm)
+                    .or("tags").fuzzy(searchTerm);
+        }
+
+//        String query = "{\"bool\":{\"should\":[{\"match_phrase\":{\"message\":\"" + searchTerm + "\"}}" +
+//                ",{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\"}}}]" +
+//                ",\"minimum_should_match\":1,\"boost\":1.0}}";
+
+        String query = query = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
+                "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+
+        //String query = "{\"match_phrase\":{\"message\":\"\" + searchTerm + \"\\\"}}";
+
+        if (Objects.nonNull(categoryId) && !categoryId.isBlank()) {
+            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
+                    "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}," +
+                    "{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
+                    "\"minimum_should_match\":1,\"boost\":1.0}}";
+
+        }
+        if (Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()) {
+            for (Object filter : amcartFilter) {
+                AmcartFilter amcartFiltering = new ObjectMapper().convertValue(filter, AmcartFilter.class);
+                Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
+                if (Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")) {
+                    andConditions.between(amcartFiltering.getFieldValue()[0], amcartFiltering.getFieldValue()[1]);
+                } else {
+                    andConditions.matches(amcartFiltering.getFieldValue()[0]);
+                }
+                if (Objects.nonNull(criteria)) {
+                    criteria = andConditions.and(criteria);
+                } else {
+                    criteria = andConditions;
+                }
+            }
+        }
+        Sort sorting = Sort.by(amcartSort.getDirection(), amcartSort.getFieldName());
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
+        /*CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(Objects.nonNull(criteria) ? criteria : new Criteria())
+                .withPageable(pageable);
+        Query query = new CriteriaQuery(criteriaQueryBuilder);*/
+        Query searchQuery = new StringQuery(query).setPageable(pageable);
+        SearchHits<Products> results = elasticsearchOperations.search(searchQuery, Products.class);
+        List<ProductsSearchResponse> searchResultContents = new ArrayList<>();
+        if (results != null && !results.isEmpty()) {
+            results.getSearchHits().stream().forEach(f -> {
+                Products products = f.getContent();
+                searchResultContents.add(products.convertToReponseModel());
+            });
+            toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
+        }
         return toRet;
     }
 

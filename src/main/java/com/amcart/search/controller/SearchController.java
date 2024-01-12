@@ -5,6 +5,7 @@ import com.amcart.search.model.request.ProductsSearchRequest;
 import com.amcart.search.model.response.ProductsSearchResponse;
 import com.amcart.search.model.response.ProductsSuggestionResponse;
 import com.amcart.search.service.SearchService;
+import com.amcart.search.util.CommonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +56,7 @@ public class SearchController {
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isBlank()) {
             amcartFiltering = new ObjectMapper().readValue(amcartFilter, List.class);
         }
-        toRet = searchService.searchProducts(searchTerm, categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);
+        toRet = searchService.searchProducts(CommonUtil.decodeUriString(searchTerm), categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
 

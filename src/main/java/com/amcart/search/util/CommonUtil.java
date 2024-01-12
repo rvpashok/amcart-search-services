@@ -2,6 +2,8 @@ package com.amcart.search.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.Objects;
 
 @UtilityClass
@@ -16,6 +18,16 @@ public class CommonUtil {
             }
         }
         return inputString;
+    }
+
+    public static String decodeUriString(String inputStr){
+        String toRet = null;
+        try {
+            toRet = URLDecoder.decode(inputStr, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        return toRet;
     }
 
     public static String replaceUnwantedCharacter(String inputString) {
