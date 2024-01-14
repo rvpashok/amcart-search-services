@@ -126,6 +126,9 @@ public class SearchServiceImpl implements SearchService {
         } else if (Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
             query = "{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}";
         }
+        else {
+            query = "{\"match_all\":{}}";
+        }
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()) {
             for (Object filter : amcartFilter) {
                 AmcartFilter amcartFiltering = new ObjectMapper().convertValue(filter, AmcartFilter.class);
