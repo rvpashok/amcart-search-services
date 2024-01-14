@@ -56,7 +56,7 @@ public class SearchController {
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isBlank()) {
             amcartFiltering = new ObjectMapper().readValue(amcartFilter, List.class);
         }
-        toRet = searchService.searchProducts(CommonUtil.decodeUriString(searchTerm), categoryId, pageNo, pageSize, amcartFiltering, amcartSorting);
+        toRet = searchService.searchProducts(CommonUtil.decodeUriString(searchTerm), CommonUtil.decodeUriString(categoryId), pageNo, pageSize, amcartFiltering, amcartSorting);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
     }
 

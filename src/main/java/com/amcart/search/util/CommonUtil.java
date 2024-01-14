@@ -23,7 +23,9 @@ public class CommonUtil {
     public static String decodeUriString(String inputStr){
         String toRet = null;
         try {
-            toRet = URLDecoder.decode(inputStr, "UTF-8");
+            if(Objects.nonNull(inputStr) && !inputStr.isBlank()){
+                toRet = URLDecoder.decode(inputStr, "UTF-8");
+            }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }

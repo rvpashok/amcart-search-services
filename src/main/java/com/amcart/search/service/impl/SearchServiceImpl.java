@@ -41,14 +41,14 @@ public class SearchServiceImpl implements SearchService {
                                                        List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
         Page<ProductsSearchResponse> toRet = null;
 
-        toRet = getSearchResults(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
-        //toRet = getSearchResultsUsingStringQuery(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
+        //toRet = getSearchResults(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
+        toRet = getSearchResultsUsingStringQuery(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
 
         //results = elasticsearchTemplate.search(query, Products.class);
         return toRet;
     }
 
-    private Page<ProductsSearchResponse> getSearchResultsUsingStringQuery(String searchTerm, String categoryId, int pageNo, int pageSize,
+    private Page<ProductsSearchResponse> getSearchResults(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                           List<String> amcartFilter, AmcartSort amcartSort){
         Page<ProductsSearchResponse> toRet = null;
         Criteria criteria = null;
@@ -104,39 +104,27 @@ public class SearchServiceImpl implements SearchService {
         return toRet;
     }
 
-    private Page<ProductsSearchResponse> getSearchResults(String searchTerm, String categoryId, int pageNo, int pageSize,
+    private Page<ProductsSearchResponse> getSearchResultsUsingStringQuery(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                           List<String> amcartFilter, AmcartSort amcartSort){
         Page<ProductsSearchResponse> toRet = null;
-        Criteria criteria = null;
         searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
         searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
-        if (Objects.nonNull(searchTerm) && !searchTerm.isBlank()) {
-            criteria = new Criteria("brand").fuzzy(searchTerm)
-                    .or("name").fuzzy(searchTerm)
-                    .or("skuName").fuzzy(searchTerm)
-                    .or("skuColor").fuzzy(searchTerm)
-                    .or("shortDescription").fuzzy(searchTerm)
-                    .or("longDescription").fuzzy(searchTerm)
-                    .or("tags").fuzzy(searchTerm);
+        String query = "";
+        if(Objects.nonNull(searchTerm) && !searchTerm.isBlank()){
+            query  = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
+                    "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
         }
-
-//        String query = "{\"bool\":{\"should\":[{\"match_phrase\":{\"message\":\"" + searchTerm + "\"}}" +
-//                ",{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\"}}}]" +
-//                ",\"minimum_should_match\":1,\"boost\":1.0}}";
-
-        String query = query = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
-                "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
-
-        //String query = "{\"match_phrase\":{\"message\":\"\" + searchTerm + \"\\\"}}";
-
-        if (Objects.nonNull(categoryId) && !categoryId.isBlank()) {
+        if (Objects.nonNull(searchTerm) && !searchTerm.isBlank() &&
+                Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
             query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
-                    "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}," +
-                    "{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
-                    "\"minimum_should_match\":1,\"boost\":1.0}}";
-
+                    "\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
+                    "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+        } else if (Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
+            query = "{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}";
         }
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()) {
             for (Object filter : amcartFilter) {
@@ -147,11 +135,11 @@ public class SearchServiceImpl implements SearchService {
                 } else {
                     andConditions.matches(amcartFiltering.getFieldValue()[0]);
                 }
-                if (Objects.nonNull(criteria)) {
-                    criteria = andConditions.and(criteria);
-                } else {
-                    criteria = andConditions;
-                }
+//                if (Objects.nonNull(criteria)) {
+//                    criteria = andConditions.and(criteria);
+//                } else {
+//                    criteria = andConditions;
+//                }
             }
         }
         Sort sorting = Sort.by(amcartSort.getDirection(), amcartSort.getFieldName());
@@ -192,7 +180,7 @@ public class SearchServiceImpl implements SearchService {
         String query = "{\"bool\":{\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}" +
                 ",{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]" +
                 ",\"minimum_should_match\":1,\"boost\":1.0}}";
-        if (Objects.nonNull(categoryId) && !categoryId.isBlank()) {
+        if (Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
             query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
                     "\"should\":[{\"query_string\":{\"fields\":[\"name\"],\"query\":\"" + searchTerm + "\"}}," +
                     "{\"match\":{\"name\":{\"query\":\"" + searchTerm + "\",\"fuzziness\": \"AUTO\",\"minimum_should_match\":0}}}]," +
