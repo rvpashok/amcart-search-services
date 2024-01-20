@@ -16,6 +16,7 @@ public class PriceRequest {
     PriceType priceType;
     CurrencyType currencyType;
     double price;
+    double originalPrice;
     boolean isDeleted;
     Map<String, Object> properties;
 }

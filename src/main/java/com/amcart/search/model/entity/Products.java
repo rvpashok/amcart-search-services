@@ -38,6 +38,7 @@ public class Products {
     PriceType priceType;
     CurrencyType currencyType;
     double price;
+    double originalPrice;
     boolean isDeleted;
     Map<String, Object> properties;
 
@@ -61,6 +62,13 @@ public class Products {
         toRet.setPriceType(this.getPriceType());
         toRet.setCurrencyType(this.getCurrencyType());
         toRet.setPrice(this.getPrice());
+        if(this.getOriginalPrice() != 0){
+            toRet.setOriginalPrice(this.getOriginalPrice());
+        }
+        else{
+            toRet.setOriginalPrice(Math.round(this.getPrice() + (this.getPrice() * 10)/100));
+        }
+
         toRet.setProperties(this.getProperties());
         toRet.setDeleted(this.isDeleted());
         return toRet;

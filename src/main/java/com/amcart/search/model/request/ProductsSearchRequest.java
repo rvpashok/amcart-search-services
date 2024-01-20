@@ -35,6 +35,7 @@ public class ProductsSearchRequest {
     PriceType priceType;
     CurrencyType currencyType;
     double price;
+    double originalPrice;
     boolean isDeleted;
     Map<String, Object> properties;
 
@@ -57,6 +58,7 @@ public class ProductsSearchRequest {
         toRet.setPriceType(this.getPriceType());
         toRet.setCurrencyType(this.getCurrencyType());
         toRet.setPrice(this.getPrice());
+        toRet.setOriginalPrice(this.getOriginalPrice());
         toRet.setProperties(this.getProperties());
         toRet.setDeleted(this.isDeleted());
         return toRet;
