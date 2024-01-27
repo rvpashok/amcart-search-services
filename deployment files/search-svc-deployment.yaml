@@ -26,12 +26,12 @@ spec:
         - containerPort: 8000
         readinessProbe:
           tcpSocket:
-            port: 8085
+            port: 8081
           initialDelaySeconds: 5
           periodSeconds: 60
         livenessProbe:
           tcpSocket:
-            port: 8085
+            port: 8081
           initialDelaySeconds: 90
           periodSeconds: 20
         resources:

@@ -31,8 +31,6 @@ public class SearchServiceImpl implements SearchService {
 
     @Autowired
     ElasticsearchOperations elasticsearchOperations;
-//    //@Autowired
-//    ElasticsearchTemplate elasticsearchTemplate;
 
 
 
