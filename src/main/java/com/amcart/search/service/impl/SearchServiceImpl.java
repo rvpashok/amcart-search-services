@@ -107,7 +107,7 @@ public class SearchServiceImpl implements SearchService {
         Page<ProductsSearchResponse> toRet = null;
         searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
         searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
-        String query = "";
+        String query = "{\"match_all\":{}}";
         if(Objects.nonNull(searchTerm) && !searchTerm.isBlank()){
             query  = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
                     "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
@@ -124,30 +124,34 @@ public class SearchServiceImpl implements SearchService {
         } else if (Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
             query = "{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}";
         }
-        else {
-            query = "{\"match_all\":{}}";
-        }
         if (Objects.nonNull(amcartFilter) && !amcartFilter.isEmpty()) {
-            for (Object filter : amcartFilter) {
-                AmcartFilter amcartFiltering = new ObjectMapper().convertValue(filter, AmcartFilter.class);
-                Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
-                if (Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")) {
-                    andConditions.between(amcartFiltering.getFieldValue()[0], amcartFiltering.getFieldValue()[1]);
-                } else {
-                    andConditions.matches(amcartFiltering.getFieldValue()[0]);
-                }
-//                if (Objects.nonNull(criteria)) {
-//                    criteria = andConditions.and(criteria);
+            //String filterQuery = "{\"match\":{\"skuColor\":\"Yellow\"}}";
+            List<String> filterQuery = new ArrayList<>();
+
+            for (int idx=0; idx<amcartFilter.size(); idx++) {
+                String tempFilterQueryFields = "";
+                AmcartFilter amcartFiltering = new ObjectMapper().convertValue(amcartFilter.get(idx), AmcartFilter.class);
+                tempFilterQueryFields = "{\"match\":{\"" + amcartFiltering.getFieldName() + "\":\""
+                        + amcartFiltering.getFieldValue()[0] + "\"}}";
+                filterQuery.add(tempFilterQueryFields);
+                //query = "\"categoryIds\":\"" + categoryId + "\"}}";
+//                Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
+//                if (Objects.nonNull(amcartFiltering.getOperator()) && amcartFiltering.getOperator().equalsIgnoreCase("between")) {
+//                    andConditions.between(amcartFiltering.getFieldValue()[0], amcartFiltering.getFieldValue()[1]);
 //                } else {
-//                    criteria = andConditions;
+//                    andConditions.matches(amcartFiltering.getFieldValue()[0]);
 //                }
+////                if (Objects.nonNull(criteria)) {
+////                    criteria = andConditions.and(criteria);
+////                } else {
+////                    criteria = andConditions;
+////                }
             }
+            //filterQuery = filterQuery + tempFilterQueryFields + "}}";
+            query = "{\"bool\":{\"must\":" + filterQuery + ",\"should\":" + query +",\"minimum_should_match\":1,\"boost\":1.0}}";
         }
         Sort sorting = Sort.by(amcartSort.getDirection(), amcartSort.getFieldName());
         Pageable pageable = PageRequest.of(pageNo, pageSize, sorting);
-        /*CriteriaQueryBuilder criteriaQueryBuilder = CriteriaQuery.builder(Objects.nonNull(criteria) ? criteria : new Criteria())
-                .withPageable(pageable);
-        Query query = new CriteriaQuery(criteriaQueryBuilder);*/
         Query searchQuery = new StringQuery(query).setPageable(pageable);
         SearchHits<Products> results = elasticsearchOperations.search(searchQuery, Products.class);
         List<ProductsSearchResponse> searchResultContents = new ArrayList<>();
