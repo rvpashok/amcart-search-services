@@ -33,7 +33,7 @@ public class SearchController {
     public ResponseEntity<Page<ProductsSuggestionResponse>> getProductSearchSuggestion(@RequestParam(required = true) String searchTerm,
                                                                                        @RequestParam(required = false) String categoryId,
                                                                                        @RequestParam(required = false, defaultValue = "0") int pageNo,
-                                                                                       @RequestParam(required = false, defaultValue = "10") int pageSize) throws JsonProcessingException {
+                                                                                       @RequestParam(required = false, defaultValue = "50") int pageSize) throws JsonProcessingException {
         Page<ProductsSuggestionResponse> toRet = null;
         toRet = searchService.suggestProducts(searchTerm, categoryId, pageNo, pageSize);
         return new ResponseEntity<>(toRet, HttpStatus.OK);
@@ -44,7 +44,7 @@ public class SearchController {
     public ResponseEntity<Page<ProductsSearchResponse>> getProductSearchData(@RequestParam(required = false) String searchTerm,
                                                                              @RequestParam(required = false) String categoryId,
                                                                              @RequestParam(required = false, defaultValue = "0") int pageNo,
-                                                                             @RequestParam(required = false, defaultValue = "10") int pageSize,
+                                                                             @RequestParam(required = false, defaultValue = "50") int pageSize,
                                                                              @RequestParam(required = false) String amcartFilter,
                                                                              @RequestParam(required = false) String amcartSort) throws JsonProcessingException {
         Page<ProductsSearchResponse> toRet = null;
