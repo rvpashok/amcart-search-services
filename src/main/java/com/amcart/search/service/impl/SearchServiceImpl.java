@@ -35,9 +35,9 @@ public class SearchServiceImpl implements SearchService {
 
 
     @Override
-    public Page<ProductsSearchResponse> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
+    public Page<List<ProductsSearchResponse>> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                        List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException {
-        Page<ProductsSearchResponse> toRet = null;
+        Page<List<ProductsSearchResponse>> toRet = null;
 
         //toRet = getSearchResults(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
         toRet = getSearchResultsUsingStringQuery(searchTerm, categoryId, pageNo, pageSize, amcartFilter, amcartSort);
@@ -102,9 +102,9 @@ public class SearchServiceImpl implements SearchService {
         return toRet;
     }
 
-    private Page<ProductsSearchResponse> getSearchResultsUsingStringQuery(String searchTerm, String categoryId, int pageNo, int pageSize,
+    private Page<List<ProductsSearchResponse>> getSearchResultsUsingStringQuery(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                           List<String> amcartFilter, AmcartSort amcartSort){
-        Page<ProductsSearchResponse> toRet = null;
+        Page<List<ProductsSearchResponse>> toRet = null;
         searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
         searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
         String query = "{\"match_all\":{}}";

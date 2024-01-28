@@ -41,13 +41,13 @@ public class SearchController {
 
     @GetMapping("/products")
     @Operation(summary = "Search Products", method = "GET")
-    public ResponseEntity<Page<ProductsSearchResponse>> getProductSearchData(@RequestParam(required = false) String searchTerm,
+    public ResponseEntity<Page<List<ProductsSearchResponse>>> getProductSearchData(@RequestParam(required = false) String searchTerm,
                                                                              @RequestParam(required = false) String categoryId,
                                                                              @RequestParam(required = false, defaultValue = "0") int pageNo,
                                                                              @RequestParam(required = false, defaultValue = "50") int pageSize,
                                                                              @RequestParam(required = false) String amcartFilter,
                                                                              @RequestParam(required = false) String amcartSort) throws JsonProcessingException {
-        Page<ProductsSearchResponse> toRet = null;
+        Page<List<ProductsSearchResponse>> toRet = null;
         AmcartSort amcartSorting = new AmcartSort("price", Sort.Direction.ASC);
         List<String> amcartFiltering = new ArrayList<>();
         if (Objects.nonNull(amcartSort) && !amcartSort.isBlank()) {

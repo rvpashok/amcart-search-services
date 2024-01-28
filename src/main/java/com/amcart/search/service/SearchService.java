@@ -19,7 +19,7 @@ public interface SearchService {
 
     String deleteProductSearchData(String id);
 
-    Page<ProductsSearchResponse> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
+    Page<List<ProductsSearchResponse>> searchProducts(String searchTerm, String categoryId, int pageNo, int pageSize,
                                                 List<String> amcartFilter, AmcartSort amcartSort) throws JsonProcessingException;
 
     Page<ProductsSuggestionResponse> suggestProducts(String searchTerm, String categoryId, int pageNo, int pageSize);
