@@ -29,7 +29,7 @@ phases:
       - ls -la
       - export KUBECONFIG=$KUBECONFIG:~/.kube/config
       - echo Push the latest image to cluster
-      - kubectl apply -f search-service.yaml
-      - kubectl apply -f search-svc-secret.yaml
-      - kubectl apply -f search-svc-deployment.yaml
-      - kubectl apply -f search-svc-hpa.yaml
+      - kubectl apply -f deployment_files/search-service.yaml
+      - kubectl apply -f deployment_files/search-svc-secret.yaml
+      - kubectl apply -f deployment_files/search-svc-deployment.yaml
+      - kubectl apply -f deployment_files/search-svc-hpa.yaml
