@@ -114,7 +114,15 @@ public class SearchServiceImpl implements SearchService {
             searchTermQuery = "[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
                     "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
                     "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}]";
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}," +
+                    "{\"wildcard\":{\"name\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"skuName\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"brand\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"skuColor\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"shortDescription\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"tags\":{\"value\":\""+searchTermWithWildCard+"\"}}}," +
+                    "{\"wildcard\":{\"longDescription\":{\"value\":\""+searchTermWithWildCard+"\"}}}" +
+                    "]";
             query = "{\"bool\":{\"should\":" + searchTermQuery + ",\"minimum_should_match\":1,\"boost\":1.0}}";
 //            query  = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
 //                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
