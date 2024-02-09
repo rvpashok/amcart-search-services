@@ -107,20 +107,31 @@ public class SearchServiceImpl implements SearchService {
         Page<List<ProductsSearchResponse>> toRet = null;
         searchTerm = CommonUtil.replaceUnwantedCharacter(searchTerm);
         searchTerm = CommonUtil.escapeMetaCharacters(searchTerm);
+        String searchTermWithWildCard = "*" + searchTerm + "*";
         String query = "{\"match_all\":{}}";
+        String searchTermQuery = "";
         if(Objects.nonNull(searchTerm) && !searchTerm.isBlank()){
-            query  = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+            searchTermQuery = "[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
                     "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
                     "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}]";
+            query = "{\"bool\":{\"should\":" + searchTermQuery + ",\"minimum_should_match\":1,\"boost\":1.0}}";
+//            query  = "{\"bool\":{\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+//                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
+//                    "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+//                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
         }
         if (Objects.nonNull(searchTerm) && !searchTerm.isBlank() &&
                 Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
-            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
-                    "\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
-                    "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
-                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+//            query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}," +
+//                    "\"should\":[{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+//                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"], \"type\": \"phrase\"}}," +
+//                    "{\"multi_match\":{\"query\":\""+searchTerm+"\"," +
+//                    "\"fields\":[\"name\",\"skuName\",\"brand\",\"skuColor\",\"shortDescription\",\"longDescription\",\"tags\"]}}],\"minimum_should_match\":1,\"boost\":1.0}}";
+
+             query = "{\"bool\":{\"must\":{\"match\":{\"categoryIds\":\"" + categoryId + "\"}},\"should\":"
+                     + searchTermQuery + ",\"minimum_should_match\":1,\"boost\":1.0}}";
+
         } else if (Objects.nonNull(categoryId) && !categoryId.isBlank() && !categoryId.equalsIgnoreCase("all")) {
             query = "{\"match\":{\"categoryIds\":\"" + categoryId + "\"}}";
         }
@@ -204,8 +215,6 @@ public class SearchServiceImpl implements SearchService {
             });
             toRet = new PageImpl(searchResultContents, pageable, results.getTotalHits());
         }
-
-        //results = elasticsearchTemplate.search(query, Products.class);
         return toRet;
     }
 
