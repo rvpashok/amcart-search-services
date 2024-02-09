@@ -18,10 +18,7 @@ import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.*;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 public class SearchServiceImpl implements SearchService {
@@ -150,8 +147,14 @@ public class SearchServiceImpl implements SearchService {
             for (int idx=0; idx<amcartFilter.size(); idx++) {
                 String tempFilterQueryFields = "";
                 AmcartFilter amcartFiltering = new ObjectMapper().convertValue(amcartFilter.get(idx), AmcartFilter.class);
-                tempFilterQueryFields = "{\"match\":{\"" + amcartFiltering.getFieldName() + "\":\""
-                        + amcartFiltering.getFieldValue()[0] + "\"}}";
+                for(int idy=0; idy<amcartFiltering.getFieldValue().length; idy++){
+                    tempFilterQueryFields = tempFilterQueryFields + "{\"match\":{\"" + amcartFiltering.getFieldName() + "\":\""
+                            + amcartFiltering.getFieldValue()[idy] + "\"}}";
+                    if(idy!=(amcartFiltering.getFieldValue().length-1)){
+                        tempFilterQueryFields = tempFilterQueryFields + ",";
+                    }
+                }
+                tempFilterQueryFields = "{\"bool\":{\"should\":[" + tempFilterQueryFields  + "],\"minimum_should_match\":1,\"boost\":1.0}}";
                 filterQuery.add(tempFilterQueryFields);
                 //query = "\"categoryIds\":\"" + categoryId + "\"}}";
 //                Criteria andConditions = new Criteria(amcartFiltering.getFieldName());
