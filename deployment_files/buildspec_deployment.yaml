@@ -33,3 +33,4 @@ phases:
       - kubectl apply -f deployment_files/search-svc-secret.yaml
       - kubectl apply -f deployment_files/search-svc-deployment.yaml
       - kubectl apply -f deployment_files/search-svc-hpa.yaml
+      - kubectl rollout restart deployment search-svc-deployment
