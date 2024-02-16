@@ -76,7 +76,7 @@ public class Products {
 
     public ProductsSuggestionResponse convertToSuggestionReponseModel() {
         ProductsSuggestionResponse toRet = new ProductsSuggestionResponse();
-        toRet.setName(this.getName() + " Test Name");
+        toRet.setName(this.getName());
         return toRet;
     }
 }
