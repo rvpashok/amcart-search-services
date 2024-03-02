@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-svc-deployment
+  labels:
+    app: search-svc
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: search-svc
+  template:
+    metadata:
+      labels:
+        app: search-svc
+    spec:
+      containers:
+      - name: search-svc
+        image: 104171546165.dkr.ecr.ap-south-1.amazonaws.com/amcart-search-service:latest
+        ports:
+        - containerPort: 8000
+        readinessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 60
+        livenessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 90
+          periodSeconds: 20
+        resources:
+          limits:
+            cpu: "600m"
+            memory: "800Mi"
+          requests:
+            cpu: "400m"
+            memory: "500Mi"
+        envFrom:
+          - secretRef:
+              name: search-svc-secret
+        imagePullPolicy: Always
